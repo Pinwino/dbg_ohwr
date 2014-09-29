@@ -1,0 +1,209 @@
+\input texinfo    @c -*-texinfo-*-
+%
+% quick_start.in - main file for the documentation
+%
+%%%%
+
+%------------------------------------------------------------------------------
+%
+%                         NOTE FOR THE UNAWARE USER
+%                         =========================
+%
+%    This file is a texinfo source. It isn't the binary file of some strange
+%    editor of mine. If you want ASCII, you should "make quick_start.txt".
+%
+%------------------------------------------------------------------------------
+
+%
+% This is not a conventional info file...
+% I use three extra features:
+%   - The '%' as a comment marker, if at beginning of line ("\%" -> "%")
+%   - leading blanks are allowed (this is something I can't live without)
+%   - braces are automatically escaped when they appear in example blocks
+%
+
+@comment %**start of header
+@documentlanguage en
+@documentencoding ISO-8859-1
+@setfilename quick_start.info
+@settitle Soft-Micro Debbuger Quick Start Guide
+@iftex
+@afourpaper
+@end iftex
+@paragraphindent none
+@comment %**end of header
+
+@setchapternewpage off
+
+@set update-month September 2014
+@set release __RELEASE_GIT_ID__
+
+@finalout
+
+@titlepage
+@title Soft-Micro Debbuger Quick Start Guide
+@subtitle @value{update-month} (@value{release})
+@subtitle Building and Running
+@author Jose Jimenez (University of Granada)
+@end titlepage
+@headings single
+
+@c ##########################################################################
+@iftex
+@contents
+@end iftex
+
+@c ##########################################################################
+@node Top
+@top Introduction
+
+This is a quick note to illustrate the Soft-Micro Debugger generic building process and its application to govern the stand-alone mode of @sc{fmc} Delay on-@sc{spec} nodes.
+
+@c ##########################################################################
+@node Building the core
+@chapter Building the core
+
+Due to its dual nature, build the core is a two step process. We need to synthesize the @sc{fpga} firmware (gateware) and compile the software which will be running on the soft-core processor instantiated inside the gateware. Optionally, the firmware compilation can be skipped since the  gateware folder contains a default @sc{lm32} software. To perform the steps below you will need a computer running Linux.
+
+@c ==========================================================================
+@node Hardware needed
+@section Hardware needed
+
+The minimum hardware you need to build and run the core is a PC computer with Linux and one Simple PCIe @sc{fmc} Carrier. This requirements are more than enough for debugging/testing application. For stand-alone operation the fmc matching the design has to be plugged on the LPC connector the carrier features.
+
+@c ==========================================================================
+@node HDL synthesis prerequisites
+@section HDL synthesis prerequisites
+To synthesize the core @sc{Xilinx} ISE (or Altera equivalent) software with at least free of charge WebPack license should be installed. System variables required by the @sc{Xilinx} software must also be set. For troubleshooting involving cable driver installation refer to [1].
+
+HDL sources be synthesized using @sc{Xilinx} ISE without any additional tools, but to automatize the process we relay on @i{hdlmake}. It creates a synthesis @i{Makefile} and ISE project file based on a set of Manifest.py files deployed among the directories inside the repository.
+
+First, please download the @i{hdlmake} binary from its repository. At the time this document is written, the most stable version of @i{hdlmake} can is the one provided by @i{isyp} branch:
+
+@example
+
+$ git git://ohwr.org/misc/hdl-make.git
+$ cd hdlmake
+$ git checkout -b isyp origin/isyp
+
+@end example
+
+And then install by putting hdlmake executable somewhere in the @i{PATH}. If you have root access we suggest you do copy or link hdlmake to the @t{/usr/local/bin}, this way hdlmake will be installed for all users:
+
+@example
+
+sudo ln -s <your_hdlmake_location>/hdlmake /usr/local/bin/hdlmake
+
+@end example
+
+If you don't have root access the best way is to modify the path variable by editing @t{$HOME/.bashrc} and adding:
+
+@example
+
+PATH=$PATH:<your_hdlmake_location>/hdlmake/
+
+@end example
+
+Finally you should check that it work @t{hdlmake --help}
+
+@c ==========================================================================
+@node @sc{lm32} software compilation prerequisites
+@section @sc{lm32} software compilation prerequisites
+
+@b{Note}: By default, the release @sc{lm32} software is embedded inside the @sc{fpga} bitstream synthesized in the previous chapter.
+
+To compile the @sc{lm32} software we need to download and unpack the @sc{lm32} toolchain.
+
+@example
+
+$ wget http://www.ohwr.org/attachments/download/1133/lm32.tar.xz
+$ tar xJf lm32.tar.xz -C <your_lm32_location>
+
+@end example
+
+Then you may need to set the @t{CROSS_COMPILE} variable in order to compile the software:
+
+@example
+
+CROSS_COMPILE="<your_lm32_location>/lm32/bin/lm32-elf-"
+
+@end example
+
+Current implementations, like this one, do this inside the Makefile. For this reason, and to avoid @i{misunderstandings} with GCC compiler specially when compiling drivers, we recommend @b{not} to set @t{CROSS_COMPILE} neither as local nor global environment variable.
+
+@c ==========================================================================
+@node Final building
+@section Final building
+Having @sc{Xilinx} ISE software, @i{hdlmake} and the @sc{lm32}-toolchain in place, next step is to clone the @i{git} repository:
+
+@example
+
+git clone git://ohwr.org/oh-applications/fmc-delay-1ns-8cha-sa.git
+cd fmc-delay-1ns-8cha-sa
+
+@end example
+
+@b{Note}: The package adds @t{wrpc-sw} and @t{fine-dealy-sw} projects as submodules (submodules are auto-initialized). Functions for printing, @sc{sdb} management, etc. are imported from the former. The later provides the file used to compile the driver. That way basic functionalities, FD API, etc. can be easily upgraded when any of the packages is modified by only commit the submodule uses. We take advance of the presence of wrpc-sw to generate a firmware for wrpc-sw Etherbone-capable.
+
+
+From the topmost directory we can choose to build the firmaware, the gatawere, the tools and all of- or a combination of them using the command @t{make} according to the following options:
+
+@table @asis
+
+@item whitouth any option, @code{all}
+
+	Everything is build. First of the software for both, Soft-Micro Debugger and @sc{wrpc} are compiled. Regarding Dbg the two available firmwares are generated: @t{dbg.ram} (simple example see [2] section 3.1]) and @t{fd_std.ram} (for Fine Dealy node stand alone application). Remote tools (to manage the memory of the core, update the firmware or provide access to the vUART) are complied an installed. Finally, the firmware just compiled is used to synthesize a bitstream, the functionality of the Dbg Core it includes depends on the option set in @t{g_dbg_init_file} ([2] Chapter III). All three files (both .ram and the .bit file) will be found on the topmost directory of the project right after the are produced.
+
+@item @code{dbg}
+@itemx @code{fd_std}
+
+	Both of this options use the Makefile inside the software directory to make use of kconfig and produce an @sc{lm32} firmware. The former option generates a simple example for the core (using @t{dbg_defconfig} as configuration file) while latter is used to compile the firmware for FD stand-alone operation (it employs @t{fd_defconfig} to configure software).
+
+@item @code{wrpc}
+
+	Generates an @sc{etherbone}-capable firmware to be run by the @sc{lm32} inside @sc{wrpc}. This firmaware is located in wrpc-sw sub-directory inside the software directory.
+
+@item @code{install}
+
+	Compiles and installs remote tools and the program for remote access to the node.
+
+@item @code{gateware}
+
+	Generates the bitstream for the @sc{fpga}. This option, previous to the synthesis, checks for the existence of an @sc{lm32} init file on the software directory, if not founded use the one on the default gateware directory.
+
+@item @code{clean}
+
+	Removes all files (.ram, logs, synthesis-related, etc) generated on all directories involved leaving the working tree in a status similar to the one right after cloning.
+
+@end table
+
+There are more options available. This ones just explaiden should be more than enough to satisfy regular users necessities. Developers may inspect @i{kconfig} options. For this options please refer to the @i{Makefiles} inside the software directory.
+
+@page
+@c ##########################################################################
+@node References
+@chapter References
+
+@enumerate
+
+@item Xilinx JTAG for Linux.
+@url{http://www.george-smart.co.uk/wiki/Xilinx_JTAG_Linux}
+
+@item Jose's MSc thesis (expalining the new core, its code and it application for stand-alone).
+@url{http://www.ohwr.org/documents/80}
+
+@item @sc{fmc} Delay Software Repository.
+@url{http://www.ohwr.org/projects/fine-delay-sw/repository}
+
+
+@end enumerate
+
+@c ##########################################################################
+@bye
+
+@c  LocalWords:  gnudd titlepage iftex texinfo CERN documentlanguage settitle
+@c  LocalWords:  documentencoding setfilename afourpaper paragraphindent FPGA
+@c  LocalWords:  setchapternewpage finalout gateware ohwr modprobe insmod cset
+@c  LocalWords:  smallexample ctrl timestamp fdelay struct spusa hdlmake Xilinx
+@c  LocalWords:  bitstream wrpc init EEPROM grandmaster wrpcsw noposix http
+@c  LocalWords:  tarball toolchain specsw sudo Etherbone FMC SPEC SDB
