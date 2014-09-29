@@ -1,4 +1,6 @@
 remote-vuart
-ethb-cl
+eb-cl
 
-ethb-mem-tst
+eb-optimize
+caloe/*.*
+caloe/*
