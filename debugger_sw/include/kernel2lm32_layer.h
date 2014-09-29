@@ -6,6 +6,7 @@
 #define dev_err(NULL, ...) 	kernel_dev(0, __VA_ARGS__)
 #define dev_warn(NULL, ...) kernel_dev(1, __VA_ARGS__)
 #define dev_info(NULL, ...) kernel_dev(2, __VA_ARGS__)
+#define dev_dbg(NULL, ...) kernel_dev(0xfff, __VA_ARGS__)
 
 #define pr_err(...)		kernel_dev(0, __VA_ARGS__)
 #define pr_warn(...)	kernel_dev(1, __VA_ARGS__)
