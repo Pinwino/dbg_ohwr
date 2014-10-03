@@ -103,7 +103,7 @@ architecture Behavioral of wb_debugger is
       report "[Dbg Core] Using a 40960 Bytes size RAM." severity note;
       return 40960/4;
     elsif (g_dbg_init_file = "FD_node") then
-      report "[Dbg Core] Using a 114740 Bytes RAM." severity note;
+      report "[Dbg Core] Using a 94208 Bytes RAM." severity note;
       return 94208/4;
     else
       report "[Dbg Core] Using user specifie size RAM size." severity note;

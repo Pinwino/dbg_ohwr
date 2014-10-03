@@ -48,11 +48,26 @@ int init_iterator=0;
 extern int fd_calib_period_s;
 int irq_count = 0;
 #define ENDRAM_MAGIC 0xbadc0ffe
-
+uint64_t sus_muertos=0;
 void _irq_entry()
 {
-	irq_count++;
 	irq_ctrl_pop();
+	int n_reg;
+	//mprint_64bit(sus_muertos);
+	mprintf("\n[16-19]=");
+	for (n_reg=16;n_reg<20;n_reg++){
+		unsigned int *reg_ptr,stack_off;
+		register caddr_t stack_ptr asm ("sp");
+		stack_off=n_reg*4;
+		reg_ptr=(stack_ptr+stack_off);
+		mprintf("%lx, ",*reg_ptr);
+	}
+	mprintf("\n");
+	irq_count++;
+	//sus_muertos++;
+
+	//mprintf("%i, %i, %i\n",irq_count, fd_calib_period_s, (irq_count%fd_calib_period_s));
+	
 	clear_irq();
 }
 
@@ -120,6 +135,7 @@ static void fd_do_reset(struct fd_dev *fd, int hw_reset)
 	udelay(1000);
 }
 
+/* ************** RESET FUNCTION FOR FD ************** */
 int fd_reset_again(struct fd_dev *fd)
 {
 	unsigned long j;
@@ -182,6 +198,7 @@ int main(void)
 	mprintf("_HEAP_START %08x\n", &_HEAP_START);
 	mprintf("_HEAP_END %08x\n", &_HEAP_END);
 
+	
 	mprintf(
 		"\n\n**********************************************************\n"
 			"*           FMC DEALY on-SPEC STAND-ALONE NODE           *\n"
@@ -197,10 +214,11 @@ int main(void)
 	fd.fd_regs_base = BASE_FINE_DELAY;
 	fd.fd_owregs_base= fd.fd_regs_base + 0x500;
 	fd.temp_timer.itmr.timer_addr_base = BASE_TIMER;
-	fd.temp_timer.itmr.cascade = cascade_disable;
-	fd.temp_timer.itmr.time_source = diff_time_periodic;
 	fd.temp_timer.itmr.timer_id_num = 0x0;
 	fd.temp_timer.itmr.timer_mode = 0x0;
+	fd.temp_timer.itmr.cascade = cascade_disable;
+	fd.temp_timer.itmr.time_source = diff_time_periodic;
+
 
 	while(init_iterator != stop){
 		check_stack();
@@ -209,29 +227,32 @@ int main(void)
 				fd_i2c_init(&fd);
 				fd.fmc = &fmc_loc; /* to prevent a malloc */
 				fd.fmc->eeprom_len = SPEC_I2C_EEPROM_SIZE;
-				heap = NULL;
+				//*heap = NULL;
 				if((fd.fmc->eeprom=malloc((size_t)(fd.fmc->eeprom_len)))==NULL)
 				{
 					kernel_dev(0, "Malloc failed.");
 					init_iterator = stop+1;
 				}
 				manage_error(fd_eeprom_read(&fd, 0x50, 0, fd.fmc->eeprom,
-											(size_t) (fd.fmc->eeprom_len)));
+				                               (size_t) (fd.fmc->eeprom_len)));
 				manage_error(fd_handle_eeprom_calibration(&fd));
 
 				free(fd.fmc->eeprom);
 				init_iterator++;
-				break;
+			break;
 
 			case 1:
+
 				fd_do_reset(&fd, 1);
 				manage_error(fd_spi_init(&fd));
 				usleep(500*1000);
 				init_iterator++;
-				break;
+			break;
 
 			case 2:
+
 				manage_error(fd_gpio_init(&fd));
+
 				init_iterator++;
 				break;
 
@@ -248,8 +269,8 @@ int main(void)
 
 			case 5:
 				fd_reset_again(&fd);
-				enable_irq();
 				manage_error(fd_acam_init(&fd));
+				enable_irq();
 				init_iterator++;
 				break;
 
@@ -273,8 +294,11 @@ int main(void)
 
 			case 8:
 				mprintf("\n*-*-*-*- Demo test -*-*-*-*\n");
+
 				shell_exec("pulse -o 4 -1");
+
 				shell_exec("pulse -o 3 -p");
+
 				mprintf("\n\n");
 				dev_info(NULL,"Type \"help\" to see command list.\n");
 				dev_info(NULL,
@@ -284,15 +308,14 @@ int main(void)
 				break;
 
 			case 9:
-				if(irq_count >= fd_calib_period_s)
+				if(irq_count)
 				{
 					irq_count=0;
-					mprintf("%i, %i, %i\n",irq_count, (irq_count%fd_calib_period_s), !(irq_count%fd_calib_period_s));
 					fd.temp_timer.function(fd.temp_timer.data);
 				}
 				shell_interactive();
 				break;
-
+				
 			default:
 					init_iterator = stop;
 				break;
@@ -300,9 +323,8 @@ int main(void)
 	}
 	
 	mprintf("\n");
-	kernel_dev(0,"That thing died, sorry... Shit happens!!!\n");
-	mprintf("       Don't go crying to your mama!! You are a full grown up.\n"
-			"       Instead of that restart the node.\n"
+	kernel_dev(0,"That thing died, sorry!!!\n");
+	mprintf("       Restart the node.\n"
 			"       I'm worried what you just read was *RESET* the node...\n"
 			"       What I wrote was *RESTART* the node (unplug stuff...)\n\n");
 	mprintf("     This is a beta version, please report bugs to:     \n"

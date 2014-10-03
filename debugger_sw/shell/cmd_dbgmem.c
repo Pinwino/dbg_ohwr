@@ -65,7 +65,7 @@ static int cmd_dbgmem(const char *argv[])
 				break;
 			case 'i':
 				not_listed = sdb_get_devices(devs,&n_devs,MAX_SDB_DEVS);
-				if(not_listed < 0) 
+				if(not_listed <= 0) 
 				{
 					if (not_listed)
 						kernel_dev(1, "%i devices not listed.\n");

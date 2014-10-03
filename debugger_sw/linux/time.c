@@ -16,7 +16,7 @@ unsigned long msecs_to_jiffies(const unsigned int m){
 }
 
 unsigned int jiffies_to_msecs(const unsigned long j){
-	return  div_u64_rem(j, 20*1000, NULL);
+	return  div_u64(j, 20*1000);
 }
 
 void getnstimeofday (struct timespec *ts){

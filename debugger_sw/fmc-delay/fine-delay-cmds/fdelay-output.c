@@ -25,6 +25,7 @@
 #include <fine-delay.h>
 #include "hw/fd_main_regs.h"
 #include "hw/fd_channel_regs.h"
+#include <linux/math64.h>
 
 #define MAX_EXT_ATTR 32
 #define NSEC_PER_SEC 1000*1000*1000
@@ -56,7 +57,7 @@ static void fdelay_add_ps(struct fdelay_time *p, uint64_t ps)
 	/* FIXME: this silently fails with ps > 10^12 = 1s */
 	tmp = div64_u64_rem(ps, 8000LLU, &ps);
 	coarse = (uint32_t) tmp;
-	frac = div_u64_rem((ps << 12), 8000LLU, NULL);
+	frac = div_u64((ps << 12), 8000LLU);
 
 	p->frac += frac;
 	if (p->frac >= 4096) 
@@ -80,7 +81,7 @@ static void fdelay_sub_ps(struct fdelay_time *p, uint64_t ps)
 	/* FIXME: this silently fails with ps > 10^12 = 1s */
 	tmp = div64_u64_rem(ps, 8000LLU, &ps);
 	coarse_neg = (uint32_t) tmp;
-	frac_neg = div_u64_rem((ps << 12), 8000LLU, NULL);
+	frac_neg = div_u64((ps << 12), 8000LLU);
 
 	if (p->frac < frac_neg) 
 	{

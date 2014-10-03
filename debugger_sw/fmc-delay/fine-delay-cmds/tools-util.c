@@ -3,7 +3,7 @@
  * Jose Jimenez  <jjimenez.wr@gmail.com>, Copyright (C) 2014 UGR.
  * Released according to the GNU GPL version 3 (GPLv3) or later.
  * 
- * Adapted from tools-util fine-delay-sw
+ * Adapted from tools-util.c within fine-delay-sw package
  */
 
 #include <stdio.h>
@@ -115,7 +115,7 @@ int sscanf_addhoc_replacement(char *str, unsigned long long *var1, unsigned long
 
 
 /* 
- * What it should if we had 64 bit printing
+ * What it should be, if we had 64 bit printing
  * 
  * Note: LM32-base cores can not divide LL use functions form linux/math64.c
  *       I provide you with (that means the fuction donw below has te be fixed)
@@ -154,14 +154,14 @@ void tools_report_time(char *name, struct fdelay_time *t, int umode)
 	uint64_t temp = mul_u64 ((u64)t->frac, 8000LLU); 
 	uint64_t picoseconds = 
 		mul_u64 ((u64)t->coarse ,8000LLU) +
-		div64_u64_rem(temp, 4096LLU, NULL);
+		div64_u64(temp, 4096LLU);
 	
 	printf("%s ", name);
 	switch(umode) {
 	case TOOLS_UMODE_USER:
 		/* 
-	   	 * This fix make the following looks like sheet (at running time).
-	     * It looks way cooler in the user space!
+	   	 * This fix make the following looks like shee... not so god (at running time).
+	     * It looks way cool in user space!
 	     * 
 	     */
 		mprint_64bit((uint64_t)(t->utc));

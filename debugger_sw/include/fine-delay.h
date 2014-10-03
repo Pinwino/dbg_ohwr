@@ -259,34 +259,13 @@ static inline void fd_split_pico(uint64_t pico,
 	//*frac = (*frac << 12) / 8000;
 }
 
-/*static inline uint32_t fmc_readl(struct fmc_device *fmc, int offset)
-{
-	uint32_t *p= (uint32_t) offset;
-	if (offset >= 0x180500 && offset < 0x190000)
-		mprintf("[READ ]: fmc_readl -> Dir %08X val %08X\n", p, *p);
-	return *p;
-
-}
-static inline void fmc_writel(struct fmc_device *fmc, uint32_t val, int off)
-{
-	uint32_t *p = (uint32_t) off;
-	*p = val;
-}*/
-
 static inline uint32_t fd_readl(struct fd_dev *fd, unsigned long reg)
 {
 	return fmc_readl(fd->fmc, fd->fd_regs_base + reg);
-	/*unsigned long  *p=fd->fd_regs_base + reg;
-	//mprintf(" [READ]: Dir %08X val %08X\n", p, *p);
-	return *p;*/
 }
 
 static inline void fd_writel(struct fd_dev *fd, uint32_t v, unsigned long reg)
 {	
-	/*unsigned long  *p = fd->fd_regs_base + reg;
-	*p = v;*/
-	
-	//mprintf("[WRITE]: Dir %08X val %08X\n", p, *p);
 	fmc_writel(fd->fmc, v, fd->fd_regs_base + reg);
 }
 

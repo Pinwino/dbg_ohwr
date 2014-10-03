@@ -12,49 +12,28 @@
 
 #include "stdint.h"
 
-/*0x0, wo, Reset Active Low */
-#define RST		0
-//0x04, ro, Shows armed timers,  (1 armed, 0 disarmed), 1 bit per timer
-#define ARM_STAT	RST+4
-//0x08, wo, arm timers
-#define ARM_SET		ARM_STAT+4
-//0x0C, wo, disarm timers
-#define ARM_CLR		ARM_SET+4
-//0x10, ro, shows timer sources, (1 diff time, 0 abs time), 1 bit per timer 
-#define SRC_STAT	ARM_CLR+4
-//0x14, wo, select diff time as source
-#define SRC_SET		SRC_STAT+4
-//0x18, wo, select abs time as source
-#define SRC_CLR		SRC_SET+4
-//0x1C, ro, shows diff time modes, (1 periodic, 0 1time), 1 bit per timer
-#define D_MODE_STAT	SRC_CLR+4
-//0x20, wo, select periodic mode
-#define D_MODE_SET	D_MODE_STAT+4
-//0x24, wo, select 1time mode
-#define D_MODE_CLR	D_MODE_SET+4
-//0x28, ro, shows cascaded start, (1 cascaded, 0 normal), 1 bit per timer
-#define CSC_STAT	D_MODE_CLR+4
-//0x2C, wo, set cascaded start
-#define CSC_SET		CSC_STAT+4
-//0x30, wo, select normal start
-#define CSC_CLR		CSC_SET+4
-//0x34, wo, reset counters, 1 bit per timer
-#define DBG		CSC_CLR+4
+#define RST				0 					//0x00, wo, Reset Active Low
+#define ARM_STAT		RST+4   			//0x04, ro, Shows armed timers,  (1 armed, 0 disarmed), 1 bit per timer
+#define ARM_SET			ARM_STAT+4   		//0x08, wo, arm timers,          
+#define ARM_CLR			ARM_SET+4   		//0x0C, wo, disarm timers,         
+#define SRC_STAT		ARM_CLR+4   		//0x10, ro, shows timer sources, (1 diff time, 0 abs time), 1 bit per timer 
+#define SRC_SET			SRC_STAT+4   		//0x14, wo, select diff time as source
+#define SRC_CLR			SRC_SET+4   		//0x18, wo, select abs time as source    
+#define D_MODE_STAT		SRC_CLR+4   		//0x1C, ro, shows diff time modes, (1 periodic, 0 1time), 1 bit per timer 
+#define D_MODE_SET		D_MODE_STAT+4   	//0x20, wo, select periodic mode
+#define D_MODE_CLR		D_MODE_SET+4   		//0x24, wo, select 1time mode
+#define CSC_STAT		D_MODE_CLR+4   		//0x28, ro, shows cascaded start, (1 cascaded, 0 normal), 1 bit per timer 
+#define CSC_SET			CSC_STAT+4   		//0x2C, wo, set cascaded start
+#define CSC_CLR			CSC_SET+4   		//0x30, wo, select normal start    
+#define DBG				CSC_CLR+4   		//0x34, wo, reset counters, 1 bit per timer
 
-//0x40
-#define BASE_TIMERS	64
-//0x40, rw, timer select. !!!CAUTION!!! content of all TM_ regs depends on this
-#define TIMER_SEL	BASE_TIMERS+0
-//0x44, rw, deadline HI word
-#define TM_TIME_HI	TIMER_SEL+4
-//0x48, rw, deadline LO word
-#define TM_TIME_LO	TM_TIME_HI+4
-//0x4C, rw, MSI msg to be sent on MSI when deadline7D5D7F53 is hit
-#define TM_MSG		TM_TIME_LO+4
-//0x50, rw, MSI adr to send the msg to when deadline is hit
-#define TM_DST_ADR	TM_MSG+4
-//0x54, rw, select comparator output for cascaded start
-#define CSC_SEL		TM_DST_ADR+4
+#define BASE_TIMERS		64              //0x40
+#define TIMER_SEL		BASE_TIMERS+0   //0x40, rw, timer select. !!!CAUTION!!! content of all TM_... regs depends on this
+#define TM_TIME_HI		TIMER_SEL+4   	//0x44, rw, deadline HI word
+#define TM_TIME_LO		TM_TIME_HI+4   	//0x48, rw, deadline LO word
+#define TM_MSG			TM_TIME_LO+4   	//0x4C, rw, MSI msg to be sent on MSI when deadline7D5D7F53 is hit
+#define TM_DST_ADR		TM_MSG+4   		//0x50, rw, MSI adr to send the msg to when deadline is hit
+#define CSC_SEL			TM_DST_ADR+4   	//0x54, rw, select comparator output for cascaded start
 
 #define num_hw_timers		1
 

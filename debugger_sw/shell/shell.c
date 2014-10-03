@@ -1,23 +1,17 @@
 /*
  * This work is part of the White Rabbit project
  *
- * Author: Jose Jimenez  <jjimenez.wr@gmail.com>, Copyright (C) 2014 UGR.
- * Released according to the GNU GPL version 3 (GPLv3) or later.
- * 
- * Based on
- * * Copyright (C) 2012 CERN (www.cern.ch)
- * * Copyright (C) 2012 GSI (www.gsi.de)
- * * Author: Tomasz Wlostowski <tomasz.wlostowski@cern.ch>
- * * Author: Wesley W. Terpstra <w.terpstra@gsi.de>
- * * Author: Grzegorz Daniluk <grzegorz.daniluk@cern.ch>
- * 
- * Evolution of shell.c:
- * - Debbuger promt
- * - Function for **char length calculation
- * - Implementantion of a one command history cyclic buffer (up key)
- * 
+ * Copyright (C) 2012 CERN (www.cern.ch)
+ * Copyright (C) 2012 GSI (www.gsi.de)
+ * Author: Tomasz Wlostowski <tomasz.wlostowski@cern.ch>
+ * Author: Wesley W. Terpstra <w.terpstra@gsi.de>
+ * Author: Grzegorz Daniluk <grzegorz.daniluk@cern.ch>
+ *
+ * Copyright (C) 2014 UGR (www.ugr.es)
+ * Author: Jose Jimenez
+ *
+ * Released according to the GNU GPL, version 3 or any later version.
  */
-
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -37,21 +31,18 @@
 #define SH_PROMPT 0
 #define SH_INPUT 1
 #define SH_EXEC 2
+#define SH_INIT 3
 
 #define ESCAPE_FLAG 0x10000
 
 #define KEY_LEFT (ESCAPE_FLAG | 68)
 #define KEY_RIGHT (ESCAPE_FLAG | 67)
-#define KEY_UP (ESCAPE_FLAG | 65)
-#define KEY_DOWN (ESCAPE_FLAG | 66)
 #define KEY_ENTER (13)
 #define KEY_ESCAPE (27)
 #define KEY_BACKSPACE (127)
 #define KEY_DELETE (126)
 
 static char cmd_buf[SH_MAX_LINE_LEN + 1];
-static char last_cmd_buf[SH_MAX_LINE_LEN + 1];
-static int last_cmd_len = 0;
 static int cmd_pos = 0, cmd_len = 0;
 static int state = SH_PROMPT;
 static int current_key = 0;
@@ -83,19 +74,6 @@ static void delete(int where)
 {
 	memmove(&cmd_buf[where], &cmd_buf[where + 1], cmd_len - where);
 	cmd_len--;
-}
-
-static void swap_str(char *str1, int *str1_len, char *str2, int *str2_len)
-{
-	char str_buf[SH_MAX_LINE_LEN + 1];
-	int str_len_buf;
-	strncpy(str_buf,str1,*str1_len);
-	strncpy(str1,str2,*str2_len);
-	strncpy(str2,str_buf,*str1_len);
-	
-	str_len_buf=*str1_len;
-	*str1_len=*str2_len;
-	*str2_len=str_len_buf;
 }
 
 static void esc(char code)
@@ -157,14 +135,19 @@ int shell_exec(const char *cmd)
 
 void shell_init()
 {
-	cmd_len = cmd_pos = last_cmd_len = 0;
-	state = SH_PROMPT;
+	cmd_len = cmd_pos = 0;
+	state = SH_INIT;
 }
 
 void shell_interactive()
 {
 	int c;
 	switch (state) {
+	case SH_INIT:
+		mprintf("\n");
+		state = SH_PROMPT;
+	break;
+		
 	case SH_PROMPT:
 		mprintf("WR-Dgb# ");
 		cmd_pos = 0;
@@ -173,6 +156,9 @@ void shell_interactive()
 		break;
 
 	case SH_INPUT:
+//		mprintf("mueroo\n");
+//aqui:
+//		goto aqui;
 		c = uart_read_byte();
 
 		if (c < 0)
@@ -199,25 +185,7 @@ void shell_interactive()
 				}
 				break;
 
-			case KEY_UP:
-					for(;cmd_pos<cmd_len;cmd_pos++) {
-						esc('C');
-					}
-					for(;cmd_pos>0;cmd_pos--) {
-						esc('D');
-						esc('P');
-					}
-					swap_str(last_cmd_buf,&last_cmd_len,cmd_buf,&cmd_len);
-					cmd_pos=cmd_len;
-					cmd_buf[cmd_len]='\0';
-					mprintf(cmd_buf); 
-				break;
-
 			case KEY_ENTER:
-				if(cmd_len>0) {
-					strncpy(last_cmd_buf,cmd_buf,cmd_len);
-					last_cmd_len=cmd_len; 
-				}
 				mprintf("\n");
 				state = SH_EXEC;
 				break;

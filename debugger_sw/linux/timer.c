@@ -11,29 +11,29 @@
 #include "hw/irq_timer.h"
 #include <linux/timer.h>
 #include <linux/jiffies.h>
+#include <dbg.h>
+
 
 extern unsigned char * BASE_TIMER;
+extern int fd_calib_period_s;
 
 int setup_timer(struct timer_list *timer, void (*function)(unsigned long),
 															unsigned long data)
 {
 	timer->function = function;	
 	timer->data=data;
-
 	return 0;
 }
 
 int mod_timer(struct timer_list *timer, unsigned long long expires)
 {
-	uint32_t *dir;
-
-	timer->expires=expires;
-	
+	timer->expires=fd_calib_period_s*0x3B9ACA0;
+	/* due to time ambiguity */
 	irq_timer_writel(&timer->itmr, 0x0, TIMER_SEL);
-	if(expires != timer->itmr.timer_dead_line 
-				|| !irq_timer_check_armed(&timer->itmr))
+	if(timer->expires != timer->itmr.timer_dead_line 
+				|| !irq_timer_check_armed(&timer->itmr)) 
 	{
-		timer->itmr.timer_dead_line = 0x3B9ACA0;
+		timer->itmr.timer_dead_line = timer->expires;
 		irq_timer_set_time(&timer->itmr, timer->itmr.timer_dead_line);
 	}
 	if(!irq_timer_check_armed(&timer->itmr))

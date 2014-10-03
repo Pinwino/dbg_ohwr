@@ -19,7 +19,7 @@ unsigned char *BASE_IRQ_CTRL;
 unsigned char *BASE_TIMER;
 unsigned char *BASE_FINE_DELAY;
 unsigned char *BASE_TICS;
-//unsigned char *BASE_WRPC_RAM;
+unsigned char *BASE_WRPC_RAM;
 
 #define SDB_INTERCONNET 0x00
 #define SDB_DEVICE      0x01
@@ -200,5 +200,5 @@ void sdb_find_devices(void)
 	BASE_TICS =			 find_device(0xfade1eaf);
 	BASE_TIMER = 		 find_device(0xdeadface);
 	BASE_IRQ_CTRL =		 find_device(0xe1fb1ade);
-	//BASE_WRPC_RAM = find_device(0x66cfeb52);
+	BASE_WRPC_RAM =		 find_device(0x66cfeb52);
 }
