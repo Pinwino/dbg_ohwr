@@ -22,6 +22,7 @@ int setup_timer(struct timer_list *timer, void (*function)(unsigned long),
 {
 	timer->function = function;	
 	timer->data=data;
+
 	return 0;
 }
 
@@ -42,5 +43,6 @@ int mod_timer(struct timer_list *timer, unsigned long long expires)
 		irq_timer_time_mode(&timer->itmr, diff_time_periodic);
 		irq_timer_arm(&timer->itmr, timer_arm);
 	}
+	
 	return 0;
 }

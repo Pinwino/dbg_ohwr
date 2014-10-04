@@ -7,11 +7,10 @@
 #define dev_warn(NULL, ...) kernel_dev(1, __VA_ARGS__)
 #define dev_info(NULL, ...) kernel_dev(2, __VA_ARGS__)
 
-
 #ifdef DEBUG
-#define dev_dbg(a, format, ...) kernel_dev(0xfff, format, __VA_ARGS__)
+#define dev_dbg(NULL, format, ...) kernel_dev(0xfff, __VA_ARGS__)
 #else
-#define dev_dbg(a, format, ...)					;
+#define dev_dbg(NULL, format, ...)       ;
 #endif
 
 #define pr_err(...)		kernel_dev(0, __VA_ARGS__)
@@ -22,7 +21,7 @@
 #define be32_to_cpu(a) a
 #define be16_to_cpu(a) a
 
-#define in_atomic() 1
+#define in_atomic() 0
 #define printk pp_printf
 #define printf pp_printf
 

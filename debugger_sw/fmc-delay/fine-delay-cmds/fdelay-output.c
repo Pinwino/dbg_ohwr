@@ -25,7 +25,6 @@
 #include <fine-delay.h>
 #include "hw/fd_main_regs.h"
 #include "hw/fd_channel_regs.h"
-#include <linux/math64.h>
 
 #define MAX_EXT_ATTR 32
 #define NSEC_PER_SEC 1000*1000*1000
@@ -57,7 +56,7 @@ static void fdelay_add_ps(struct fdelay_time *p, uint64_t ps)
 	/* FIXME: this silently fails with ps > 10^12 = 1s */
 	tmp = div64_u64_rem(ps, 8000LLU, &ps);
 	coarse = (uint32_t) tmp;
-	frac = div_u64((ps << 12), 8000LLU);
+	frac = div_u64_rem((ps << 12), 8000LLU, NULL);
 
 	p->frac += frac;
 	if (p->frac >= 4096) 
@@ -81,7 +80,7 @@ static void fdelay_sub_ps(struct fdelay_time *p, uint64_t ps)
 	/* FIXME: this silently fails with ps > 10^12 = 1s */
 	tmp = div64_u64_rem(ps, 8000LLU, &ps);
 	coarse_neg = (uint32_t) tmp;
-	frac_neg = div_u64((ps << 12), 8000LLU);
+	frac_neg = div_u64_rem((ps << 12), 8000LLU, NULL);
 
 	if (p->frac < frac_neg) 
 	{
@@ -236,7 +235,7 @@ int fdelay_config_pulse(struct fd_dev *fd, int ch, struct fdelay_pulse *pulse)
 
 /* The "pulse_ps" function relies on the previous one **/
 int fdelay_config_pulse_ps(struct fd_dev *fd,
-					int channel, struct fdelay_pulse_ps *ps)
+			   int channel, struct fdelay_pulse_ps *ps)
 {
 	struct fdelay_pulse p;
 
@@ -323,7 +322,7 @@ int fdelay_get_config_pulse(struct fd_dev *fd, int channel,
 }
 
 static void fdelay_subtract_ps(struct fdelay_time *t2,
-								struct fdelay_time *t1, int64_t *pico)
+				   struct fdelay_time *t1, int64_t *pico)
 {
 	uint64_t pico1, pico2;
 

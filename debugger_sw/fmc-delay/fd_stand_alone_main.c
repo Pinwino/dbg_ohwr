@@ -185,7 +185,7 @@ int main(void)
 	
 	sdb_find_devices();
 	uart_init_hw();
-	mprintf("\nWR-Dbg: starting up...\n");
+	mprintf("\nWR-Dbg: starting up... sa\n");
 	
 	usleep_init();
 	usleep(750*1000);
@@ -214,11 +214,10 @@ int main(void)
 	fd.fd_regs_base = BASE_FINE_DELAY;
 	fd.fd_owregs_base= fd.fd_regs_base + 0x500;
 	fd.temp_timer.itmr.timer_addr_base = BASE_TIMER;
-	fd.temp_timer.itmr.timer_id_num = 0x0;
-	fd.temp_timer.itmr.timer_mode = 0x0;
 	fd.temp_timer.itmr.cascade = cascade_disable;
 	fd.temp_timer.itmr.time_source = diff_time_periodic;
-
+	fd.temp_timer.itmr.timer_id_num = 0x0;
+	fd.temp_timer.itmr.timer_mode = 0x0;
 
 	while(init_iterator != stop){
 		check_stack();
@@ -269,10 +268,10 @@ int main(void)
 
 			case 5:
 				fd_reset_again(&fd);
-				manage_error(fd_acam_init(&fd));
 				enable_irq();
+				manage_error(fd_acam_init(&fd));
 				init_iterator++;
-				break;
+			break;
 
 			case 6:
 				manage_error(fd_time_init(&fd));
@@ -283,29 +282,26 @@ int main(void)
 				if(tcr != fd_readl(&fd, FD_REG_TCR))
 					fd_writel(&fd, tcr, FD_REG_TCR);
 				init_iterator++;
-				break;
+			break;
 
 			case 7:
 				for (ch = 1; ch <= FD_CH_NUMBER; ch++)
 					fd_gpio_set(&fd, FD_GPIO_OUTPUT_EN(ch));
 				init_iterator++;
 				mprintf("\n*-*-*-*- Node initialized -*-*-*-*\n");
-				break;
+			break;
 
 			case 8:
 				mprintf("\n*-*-*-*- Demo test -*-*-*-*\n");
-
 				shell_exec("pulse -o 4 -1");
-
 				shell_exec("pulse -o 3 -p");
-
 				mprintf("\n\n");
 				dev_info(NULL,"Type \"help\" to see command list.\n");
 				dev_info(NULL,
 				      "Use \"<command_name -h>\" to explore commands usage.\n");
 				mprintf("\n");
 				init_iterator++;
-				break;
+			break;
 
 			case 9:
 				if(irq_count)
@@ -314,11 +310,11 @@ int main(void)
 					fd.temp_timer.function(fd.temp_timer.data);
 				}
 				shell_interactive();
-				break;
-				
+			break;
+
 			default:
 					init_iterator = stop;
-				break;
+			break;
 		}
 	}
 	

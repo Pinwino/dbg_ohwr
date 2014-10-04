@@ -153,9 +153,9 @@ void tools_report_time(char *name, struct fdelay_time *t, int umode)
 {
 	uint64_t temp = mul_u64 ((u64)t->frac, 8000LLU); 
 	uint64_t picoseconds = 
-		mul_u64 ((u64)t->coarse ,8000LLU) +
-		div64_u64(temp, 4096LLU);
-	
+	     mul_u64 ((u64)t->coarse ,8000LLU) +
+	     div64_u64_rem(temp, 4096LLU, NULL);
+			
 	printf("%s ", name);
 	switch(umode) {
 	case TOOLS_UMODE_USER:

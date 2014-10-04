@@ -24,8 +24,8 @@ static void help(void)
 	        "     -i         : Device/index list\n"
 	        "     -idev_index: Set dev_index address as base addres\n"
 	        "     offset     : Address to acces, if -bbase is not specified\n"
-	        "                : If specfied, the offset respect such address\n"
-	        "     value      : Value to write\n");
+		    "                : If specfied, the offset respect such address\n"
+		    "     value      : Value to write\n");
 }
 
 static int cmd_dbgmem(const char *argv[])
